@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Énergie Pro - V 1.0</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6a5acd">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+    
+    <style>
+        :root { 
+            --primary: #6a5acd; --secondary: #483d8b; --success: #27ae60; 
+            --danger: #e74c3c; --info: #3498db; --bg-body: #f0f2f5; 
+            --bg-card: #ffffff; --text-main: #333; --border: #ddd;
+        }
+        body.dark-mode {
+            --bg-body: #1a1a2e; --bg-card: #16213e; --text-main: #e9ecef; --border: #2d3436;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; line-height: 1.5; }
+        .no-print { max-width: 1100px; margin: auto; }
+        .header-section { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 25px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .dark-mode-toggle { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 50px; cursor: pointer; font-size: 0.8rem; }
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 25px; background: var(--bg-card); padding: 6px; border-radius: 15px; border: 1px solid var(--border); overflow-x: auto; }
+        .tab { flex: 1; padding: 12px; cursor: pointer; border: none; border-radius: 10px; background: transparent; color: var(--text-main); font-weight: 600; white-space: nowrap; transition: 0.2s; }
+        .tab.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(106, 90, 205, 0.3); }
+        .container { display: none; background: var(--bg-card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 25px; animation: fadeIn 0.3s ease; }
+        .container.active { display: block; }
+        .form-control { margin-bottom: 12px; padding: 12px; width: 100%; border: 2px solid var(--border); border-radius: 10px; background: var(--bg-card); color: var(--text-main); box-sizing: border-box; font-size: 1rem; }
+        .slider-container { margin-bottom: 15px; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: var(--primary); }
+        .radiesthesie-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: rgba(106, 90, 205, 0.05); padding: 15px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 20px; }
+        .chakra-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .chakra-item { padding: 10px; border-radius: 12px; border: 1px solid var(--border); text-align: center; font-size: 0.75rem; background: rgba(0,0,0,0.02); }
+        .btn-action { padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 0.9rem; }
+        .btn-save { background: var(--success); color: white; }
+        .btn-outline { background: var(--info); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .report-card { border: 1px solid var(--border); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); }
+        
+        .history-item { border: 1px solid var(--border); border-radius: 15px; margin-bottom: 10px; background: var(--bg-card); overflow: hidden; }
+        .history-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(106, 90, 205, 0.03); font-weight: bold; }
+        .history-content { padding: 0 15px; max-height: 0; overflow: hidden; transition: 0.3s ease-out; font-size: 0.9rem; white-space: pre-wrap; }
+        .history-item.open .history-content { max-height: 2000px; padding: 15px; border-top: 1px solid var(--border); }
+        .history-header::after { content: '▼'; font-size: 0.7rem; transition: 0.3s; opacity: 0.5; }
+        .history-item.open .history-header::after { transform: rotate(180deg); }
+
+        #toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 10px; color: white; font-weight: bold; transform: translateY(100px); transition: 0.4s; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .autocomplete-results { position: absolute; z-index: 1000; background: var(--bg-card); border: 1px solid var(--border); width: 95%; display: none; border-radius: 0 0 10px 10px; max-height: 200px; overflow-y: auto; }
+        .autocomplete-item { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media print {
+            .no-print, .nav-tabs, .dark-mode-toggle, .btn-action, .history-header::after, hr { display: none !important; }
+            .container { display: block !important; border: none; }
+            .history-content { max-height: none !important; padding: 15px !important; display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="no-print">
+    <div class="header-section">
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌓 Mode Nuit</button>
+        <h1>Expert Énergie Pro</h1>
+        <p>Version 1.0</p>
+    </div>
+
+    <nav class="nav-tabs">
+        <button id="nav-clients" class="tab active" onclick="showTab('clients')">👥 Consultants</button>
+        <button id="nav-rdv" class="tab" onclick="showTab('rdv')">📅 RDV</button>
+        <button id="nav-seance" class="tab" onclick="showTab('seance')">✨ Séance</button>
+        <button id="nav-historique" class="tab" onclick="showTab('historique')">📄 Historique</button>
+        <button id="nav-perso" class="tab" onclick="showTab('perso')">🎨 Perso</button>
+        <button id="nav-outils" class="tab" onclick="showTab('outils')">⚙️ Outils</button>
+    </nav>
+
+    <div id="clients" class="container active">
+        <h3 id="formTitle">Nouveau Consultant</h3>
+        <input type="hidden" id="editId">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <input type="text" id="c_nom" class="form-control" placeholder="NOM">
+            <input type="text" id="c_prenom" class="form-control" placeholder="Prénom">
+        </div>
+        <div style="position:relative;">
+            <input type="text" id="c_adresse_search" class="form-control" placeholder="🔍 Rechercher une adresse">
+            <div id="addr_results" class="autocomplete-results"></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px;">
+            <input type="text" id="c_rue" class="form-control" placeholder="Rue">
+            <input type="text" id="c_cp" class="form-control" placeholder="CP">
+            <input type="text" id="c_ville" class="form-control" placeholder="Ville">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <input type="tel" id="c_tel" class="form-control" placeholder="Téléphone">
+            <input type="email" id="c_mail" class="form-control" placeholder="E-mail">
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button id="btnSaveClient" class="btn-action btn-save" style="flex:2" onclick="saveClient()">➕ Enregistrer</button>
+            <button id="btnCancelEdit" class="btn-action btn-danger" style="flex:1; display:none;" onclick="resetForm()">Annuler</button>
+        </div>
+        <hr>
+        <input type="text" id="searchClient" class="form-control" placeholder="🔍 Rechercher dans la liste..." oninput="renderClients()">
+        <div id="clientList"></div>
+    </div>
+
+    <div id="rdv" class="container">
+        <h3>Rendez-vous</h3>
+        <div style="background: rgba(106, 90, 205, 0.05); padding: 15px; border-radius: 15px; border: 1px solid var(--primary);">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <select id="rdvClient" class="form-control" onchange="generateRDVMessage()"></select>
+                <input type="datetime-local" id="rdvDate" class="form-control" onchange="generateRDVMessage()">
+            </div>
+            <select id="rdvType" class="form-control" onchange="generateRDVMessage()">
+                <option value="Cabinet">Au Cabinet</option>
+                <option value="Client">À votre domicile</option>
+                <option value="Distanciel">À distance (Visio/Tél)</option>
+            </select>
+            <textarea id="rdvFinalMessage" class="form-control" rows="6"></textarea>
+            <button class="btn-action btn-save" style="width:100%" onclick="comboRDV()">📅 Calendrier & E-mail</button>
+        </div>
+    </div>
+
+    <div id="seance" class="container">
+        <h3>Séance de Soin</h3>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom: 15px;">
+            <select id="selectClient" class="form-control" onchange="autoAnalyze()"></select>
+            <input type="date" id="dateSeance" class="form-control">
+        </div>
+
+        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 15px; border: 1px solid var(--success); margin-bottom: 15px;">
+            <h4 style="margin-top:0; color: var(--success);">🌳 1. Dimension Physique & Vitale</h4>
+            <input type="text" id="objectif" class="form-control" placeholder="🎯 Motif : Qu'est-ce qui vous amène et qu'attendez-vous ?" oninput="autoAnalyze()">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <input type="text" id="douleur_loc" class="form-control" placeholder="📍 Zone de gêne / Cartographie" oninput="autoAnalyze()">
+                <select id="douleur_type" class="form-control" onchange="autoAnalyze()">
+                    <option value="">Sensation...</option>
+                    <option value="Froid">Sensation de Froid</option>
+                    <option value="Chaud">Sensation de Chaud</option>
+                    <option value="Oppression">Oppression</option>
+                    <option value="Vide">Sensation de Vide</option>
+                </select>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <select id="q_sommeil" class="form-control" onchange="autoAnalyze()">
+                    <option value="Sommeil : Bon">😴 Sommeil : Bon / Réparateur</option>
+                    <option value="Sommeil : Agité">😴 Sommeil : Agité</option>
+                    <option value="Sommeil : Insomnies">😴 Sommeil : Insomnies</option>
+                </select>
+                <select id="q_ancrage" class="form-control" onchange="autoAnalyze()">
+                    <option value="Connexion : Présent dans son corps">🧘 Présent dans son corps (Stable)</option>
+                    <option value="Connexion : Mental envahissant / Flottant">🧠 Mental envahissant (Flottant)</option>
+                    <option value="Connexion : Déconnecté des sensations">☁️ Déconnecté des sensations (Éparpillé)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 15px; border: 1px solid var(--info); margin-bottom: 15px;">
+            <h4 style="margin-top:0; color: var(--info);">🧠 2. Dimension Émotionnelle & Mentale</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <select id="q_emotion" class="form-control" onchange="autoAnalyze()">
+                    <option value="Émotion : Stable">Météo : Stable</option>
+                    <option value="Émotion : Colère">Météo : Colère</option>
+                    <option value="Émotion : Tristesse">Météo : Tristesse</option>
+                    <option value="Émotion : Peur">Météo : Peur</option>
+                    <option value="Émotion : Stagnation">Météo : Stagnation</option>
+                </select>
+                <input type="text" id="q_mental" class="form-control" placeholder="Pensées en boucle / Charge mentale..." oninput="autoAnalyze()">
+            </div>
+            <input type="text" id="q_declencheur" class="form-control" placeholder="Déclencheur (changement, conflit, deuil) ?" oninput="autoAnalyze()">
+        </div>
+
+        <div class="radiesthesie-grid">
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between;">
+                    <label>🌀 Taux (UB) : <strong id="tv_display">12000</strong></label>
+                    <label style="font-size:0.7rem;"><input type="checkbox" id="highFreq" onchange="toggleHighFreq()"> HF</label>
+                </div>
+                <input type="number" id="tv_val" class="form-control" value="12000" oninput="syncSlider('tv')">
+                <input type="range" id="tv_slider" min="0" max="50000" step="500" value="12000" oninput="syncInput('tv')">
+            </div>
+            <div class="slider-container">
+                <label>⚡ Vitalité (1-10) : <strong id="vit_display">7</strong>/10</label>
+                <input type="number" id="vit_val" class="form-control" value="7" min="0" max="10" oninput="syncSlider('vit')">
+                <input type="range" id="vit_slider" min="0" max="10" step="1" value="7" oninput="syncInput('vit')">
+            </div>
+        </div>
+
+        <div class="chakra-grid" id="chakraSelectors"></div>
+        
+        <div style="background: rgba(155, 89, 182, 0.1); padding: 10px; border-radius: 10px; border: 1px solid var(--primary); margin-bottom: 15px; font-size: 0.85rem;">
+            <strong>✨ 3. Énergétique & Symbolique (Centres de force)</strong>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:5px;">
+                <label><input type="checkbox" class="q_check" value="Insécurité (Racine)" onchange="autoAnalyze()"> Sentiment d'insécurité</label>
+                <label><input type="checkbox" class="q_check" value="Prendre sa place (Plexus)" onchange="autoAnalyze()"> Mal à dire non / Sa place</label>
+                <label><input type="checkbox" class="q_check" value="Non-dits (Gorge)" onchange="autoAnalyze()"> Choses non-dites</label>
+                <label><input type="checkbox" class="q_check" value="Vampirisme / Fuite" onchange="autoAnalyze()"> Impression d'être vidé</label>
+            </div>
+        </div>
+
+        <div style="background: rgba(149, 165, 166, 0.1); padding: 15px; border-radius: 15px; border: 1px solid #7f8c8d; margin-bottom: 15px;">
+            <h4 style="margin-top:0; color: #7f8c8d;">👪 4. Dimension Systémique & Environnement</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <input type="text" id="q_heritage" class="form-control" placeholder="Héritage familial / Ancêtres" oninput="autoAnalyze()">
+                <input type="text" id="q_lieu" class="form-control" placeholder="Lieu de vie (Ressourcement ?)" oninput="autoAnalyze()">
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <textarea id="notes_perso" class="form-control" rows="8" placeholder="Notes de séance libres..." oninput="autoAnalyze()"></textarea>
+            <textarea id="rapport_brut" class="form-control" rows="8" readonly placeholder="Analyse brute pour l'IA..."></textarea>
+        </div>
+        
+        <button class="btn-action btn-outline" style="width:100%; margin-bottom:10px;" onclick="copyAIPrompt()">📋 Copier Prompt & Ouvrir Gemini</button>
+        <textarea id="ai_result_output" class="form-control" rows="8" placeholder="Collez ici le résultat généré par l'IA pour l'enregistrer..."></textarea>
+        <button class="btn-action btn-save" style="width:100%" onclick="saveSeanceToHistory()">✅ Enregistrer la séance</button>
+    </div>
+
+    <div id="historique" class="container">
+        <h3>Historique des Séances</h3>
+        <div id="fullHistory"></div>
+    </div>
+
+    <div id="perso" class="container">
+        <h3>Paramètres Cabinet</h3>
+        <input type="text" id="p_nom_cabinet" class="form-control" placeholder="Nom du Cabinet" oninput="savePerso()">
+        <input type="text" id="p_adresse_cabinet" class="form-control" placeholder="Adresse du Cabinet" oninput="savePerso()">
+        <textarea id="p_signature" class="form-control" rows="4" placeholder="Signature (fin de mail)..." oninput="savePerso()"></textarea>
+    </div>
+
+    <div id="outils" class="container">
+        <h3>💾 Gestion des Données</h3>
+        <button class="btn-action btn-save" style="width:100%; margin-bottom:10px;" onclick="exportData()">📤 Exporter (Télécharger JSON)</button>
+        <button class="btn-action btn-outline" style="width:100%; margin-bottom:20px;" onclick="document.getElementById('fileChooser').click()">📥 Importer (Choisir un fichier)</button>
+        <input type="file" id="fileChooser" style="display:none" accept=".json" onchange="importData(event)">
+        <hr>
+        <h3>📂 Archives locales</h3>
+        <div id="backupList"></div>
+        <hr>
+        <button class="btn-action btn-danger" style="width:100%" onclick="clearData()">⚠️ RÉINITIALISER TOUT</button>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'energyPro_V1_0';
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { 
+        clients: [], consultations: [], rdv: [], perso: { nom_cabinet: "", adresse_cabinet: "", signature: "" } 
+    };
+
+    const CHAKRAS = ["Racine", "Sacré", "Plexus", "Coeur", "Gorge", "3ème Œil", "Coronal"];
+    const COLORS = ["#e74c3c", "#e67e22", "#f1c40f", "#27ae60", "#3498db", "#2980b9", "#9b59b6"];
+
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderClients(); renderHistory(); }
+
+    function showTab(id) { 
+        document.querySelectorAll('.container, .tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active'); 
+        document.getElementById('nav-' + id).classList.add('active');
+        const selectors = ['rdvClient', 'selectClient'];
+        selectors.forEach(selId => {
+            const sel = document.getElementById(selId);
+            if(sel) sel.innerHTML = state.clients.map(c => `<option value="${c.id}">${c.nom} ${c.prenom}</option>`).join('');
+        });
+        if(id === 'historique') renderHistory();
+    }
+
+    function syncInput(p) { document.getElementById(p + '_val').value = document.getElementById(p + '_slider').value; document.getElementById(p + '_display').innerText = document.getElementById(p + '_val').value; autoAnalyze(); }
+    function syncSlider(p) { document.getElementById(p + '_slider').value = document.getElementById(p + '_val').value; document.getElementById(p + '_display').innerText = document.getElementById(p + '_val').value; autoAnalyze(); }
+    function toggleHighFreq() { document.getElementById('tv_slider').max = document.getElementById('highFreq').checked ? 200000 : 50000; }
+
+    function autoAnalyze() {
+        let rapport = `🎯 OBJECTIF : ${document.getElementById('objectif').value || 'Soin énergétique'}\n\n`;
+        rapport += `📏 MESURES : TV ${document.getElementById('tv_val').value} UB | Vitalité ${document.getElementById('vit_val').value}/10\n`;
+        rapport += `\n🧱 1. PHYSIQUE :`;
+        rapport += `\n- Gêne : ${document.getElementById('douleur_loc').value || 'N/A'} (${document.getElementById('douleur_type').value || 'Aucune sensation'})`;
+        rapport += `\n- ${document.getElementById('q_sommeil').value} | ${document.getElementById('q_ancrage').value}`;
+        rapport += `\n\n🧠 2. ÉMOTIONNEL & MENTAL :`;
+        rapport += `\n- ${document.getElementById('q_emotion').value}`;
+        if(document.getElementById('q_mental').value) rapport += `\n- Mental : ${document.getElementById('q_mental').value}`;
+        if(document.getElementById('q_declencheur').value) rapport += `\n- Déclencheur : ${document.getElementById('q_declencheur').value}`;
+        rapport += `\n\n✨ 3. ÉNERGÉTIQUE :`;
+        CHAKRAS.forEach((n, i) => {
+            const val = document.getElementById(`ch_${i}`).value;
+            if(val !== "Harmonisé") rapport += `\n- Chakra ${n} : ${val}`;
+        });
+        const checks = Array.from(document.querySelectorAll('.q_check:checked')).map(c => c.value);
+        if(checks.length > 0) rapport += `\n- Observations : ${checks.join(', ')}`;
+        rapport += `\n\n👪 4. SYSTÉMIQUE :`;
+        if(document.getElementById('q_heritage').value) rapport += `\n- Héritage : ${document.getElementById('q_heritage').value}`;
+        if(document.getElementById('q_lieu').value) rapport += `\n- Lieu : ${document.getElementById('q_lieu').value}`;
+        if(document.getElementById('notes_perso').value) rapport += `\n\n📝 NOTES COMPLÉMENTAIRES :\n${document.getElementById('notes_perso').value}`;
+        document.getElementById('rapport_brut').value = rapport;
+    }
+
+    // Gestion de l'adresse (API Gouv)
+    document.getElementById('c_adresse_search').addEventListener('input', async (e) => {
+        const val = e.target.value;
+        if(val.length < 5) return;
+        try {
+            const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(val)}&limit=5`);
+            const json = await res.json();
+            const div = document.getElementById('addr_results');
+            div.innerHTML = json.features.map(f => `<div class="autocomplete-item" onclick="setAddr('${f.properties.name}', '${f.properties.postcode}', '${f.properties.city}')">${f.properties.label}</div>`).join('');
+            div.style.display = 'block';
+        } catch(e) {}
+    });
+
+    function setAddr(rue, cp, ville) {
+        document.getElementById('c_rue').value = rue; document.getElementById('c_cp').value = cp; document.getElementById('c_ville').value = ville;
+        document.getElementById('addr_results').style.display = 'none';
+    }
+
+    function saveClient() {
+        const id = document.getElementById('editId').value;
+        const cli = { id: id ? parseInt(id) : Date.now(), nom: document.getElementById('c_nom').value.toUpperCase(), prenom: document.getElementById('c_prenom').value, rue: document.getElementById('c_rue').value, cp: document.getElementById('c_cp').value, ville: document.getElementById('c_ville').value, tel: document.getElementById('c_tel').value, mail: document.getElementById('c_mail').value };
+        if(id) { const idx = state.clients.findIndex(c => c.id == id); state.clients[idx] = cli; } else { state.clients.push(cli); }
+        save(); resetForm(); showToast("Client enregistré !");
+    }
+
+    function renderClients() {
+        const filter = document.getElementById('searchClient').value.toLowerCase();
+        document.getElementById('clientList').innerHTML = state.clients.filter(c => (c.nom + ' ' + c.prenom).toLowerCase().includes(filter)).map(c => `
+            <div class="report-card">
+                <span><strong>${c.nom}</strong> ${c.prenom}</span>
+                <div>
+                    <button class="btn-action btn-outline" style="padding:5px 10px;" onclick="editClient(${c.id})">✏️</button>
+                    <button class="btn-action btn-danger" style="padding:5px 10px;" onclick="deleteClient(${c.id})">🗑️</button>
+                </div>
+            </div>`).join('');
+    }
+
+    function editClient(id) {
+        const c = state.clients.find(cli => cli.id === id);
+        document.getElementById('editId').value = c.id;
+        document.getElementById('c_nom').value = c.nom; document.getElementById('c_prenom').value = c.prenom;
+        document.getElementById('c_rue').value = c.rue; document.getElementById('c_cp').value = c.cp;
+        document.getElementById('c_ville').value = c.ville; document.getElementById('c_tel').value = c.tel;
+        document.getElementById('c_mail').value = c.mail;
+        document.getElementById('btnCancelEdit').style.display = "block"; showTab('clients');
+    }
+
+    function resetForm() { document.getElementById('editId').value = ""; ['c_nom','c_prenom','c_rue','c_cp','c_ville','c_tel','c_mail','c_adresse_search'].forEach(i => document.getElementById(i).value = ""); document.getElementById('btnCancelEdit').style.display = "none"; }
+    function deleteClient(id) { if(confirm("Supprimer ce consultant ?")) { state.clients = state.clients.filter(c => c.id !== id); save(); } }
+
+    function renderHistory() {
+        const histDiv = document.getElementById('fullHistory');
+        if(!state.consultations.length) { histDiv.innerHTML = "Aucune séance enregistrée."; return; }
+        histDiv.innerHTML = state.consultations.slice().reverse().map((s, i) => {
+            const client = state.clients.find(c => (c.prenom + " " + c.nom) === s.clientName);
+            const email = client ? client.mail : "";
+            return `
+            <div class="history-item" id="hist-${i}">
+                <div class="history-header" onclick="document.getElementById('hist-${i}').classList.toggle('open')">
+                    <span>${s.clientName}</span>
+                    <span style="font-weight:normal; font-size:0.8rem;">${s.date}</span>
+                </div>
+                <div class="history-content">
+                    ${s.rapport}
+                    <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px; border-top:1px solid var(--border); padding-top:10px;">
+                        <button class="btn-action btn-save" style="background:#3498db;" onclick="sendReportMail('${email}', \`${encodeURIComponent(s.rapport)}\`)">📧 Envoyer</button>
+                        <button class="btn-action btn-danger" onclick="deleteSeance(${s.id})">🗑️</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function sendReportMail(email, encodedRapport) {
+        if(!email) { alert("Pas d'email pour ce client."); return; }
+        const rapport = decodeURIComponent(encodedRapport);
+        const body = `Bonjour,\n\nVoici le compte-rendu de notre séance :\n\n${rapport}\n\n${state.perso.signature}`;
+        window.open(`mailto:${email}?subject=Compte-rendu Séance&body=${encodeURIComponent(body)}`);
+    }
+
+    function deleteSeance(id) { if(confirm("Supprimer cette séance ?")) { state.consultations = state.consultations.filter(s => s.id !== id); save(); } }
+    function exportData() {
+        const dataStr = JSON.stringify(state);
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dataStr], {type:"application/json"})); a.download = `backup_expert_v1.json`; a.click();
+    }
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = (e) => { try { state = JSON.parse(e.target.result); save(); location.reload(); } catch(err) { alert("Erreur d'import."); } };
+        reader.readAsText(event.target.files[0]);
+    }
+    function clearData() { if(confirm("Tout effacer ?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+
+    function copyAIPrompt() { 
+        const prompt = "Agis en tant que thérapeute énergéticien expérimenté. En te basant sur mes notes de séance ci-dessous, rédige un compte-rendu professionnel, bienveillant et structuré pour mon consultant. Inclus une partie sur l'état général, les chakras travaillés et quelques conseils d'ancrage ou de soin :\n\n" + document.getElementById('rapport_brut').value;
+        navigator.clipboard.writeText(prompt).then(() => {
+            showToast("Prompt copié ! Ouverture de Gemini...");
+            window.open('https://gemini.google.com/', '_blank');
+        });
+    }
+
+    function saveSeanceToHistory() {
+        const cliId = document.getElementById('selectClient').value;
+        if(!cliId) return;
+        const cli = state.clients.find(c => c.id == cliId);
+        state.consultations.push({ id: Date.now(), clientName: `${cli.prenom} ${cli.nom}`, date: document.getElementById('dateSeance').value || new Date().toLocaleDateString(), rapport: document.getElementById('ai_result_output').value });
+        save(); showTab('historique');
+    }
+
+    function comboRDV() {
+        const c = state.clients.find(cli => cli.id == document.getElementById('rdvClient').value);
+        if(!c) return;
+        const msg = document.getElementById('rdvFinalMessage').value;
+        window.open(`mailto:${c.mail}?subject=RDV Soin Énergétique&body=${encodeURIComponent(msg)}`);
+        showToast("Mail prêt !");
+    }
+
+    function generateRDVMessage() {
+        const c = state.clients.find(cli => cli.id == document.getElementById('rdvClient').value);
+        if(!c) return;
+        const type = document.getElementById('rdvType').value;
+        const dateInput = document.getElementById('rdvDate').value;
+        const date = dateInput ? new Date(dateInput).toLocaleString('fr-FR') : "[DATE]";
+        let loc = type === 'Cabinet' ? state.perso.adresse_cabinet : (type === 'Client' ? `${c.rue}, ${c.cp} ${c.ville}` : 'Lien visio envoyé prochainement');
+        document.getElementById('rdvFinalMessage').value = `Bonjour ${c.prenom},\n\nJe vous confirme notre RDV le ${date}.\nLieu : ${loc}\n\nAu plaisir de vous voir.\n${state.perso.signature}`;
+    }
+
+    // INITIALISATION
+    document.getElementById('chakraSelectors').innerHTML = CHAKRAS.map((n, i) => `
+        <div class="chakra-item" style="border-top: 4px solid ${COLORS[i]}">
+            <strong>${n}</strong>
+            <select id="ch_${i}" class="form-control" onchange="autoAnalyze()">
+                <option value="Harmonisé">Harmonisé</option><option value="Faible">Faible</option><option value="Bloqué">Bloqué</option><option value="Suractif">Suractif</option>
+            </select>
+        </div>`).join('');
+
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.background = "#27ae60"; t.style.transform = "translateY(0)"; setTimeout(() => t.style.transform = "translateY(100px)", 3000); }
+    function savePerso() { state.perso = { nom_cabinet: document.getElementById('p_nom_cabinet').value, adresse_cabinet: document.getElementById('p_adresse_cabinet').value, signature: document.getElementById('p_signature').value }; save(); }
+    
+    if(state.perso) { 
+        document.getElementById('p_nom_cabinet').value = state.perso.nom_cabinet || ""; 
+        document.getElementById('p_adresse_cabinet').value = state.perso.adresse_cabinet || ""; 
+        document.getElementById('p_signature').value = state.perso.signature || ""; 
+    }
+    document.getElementById('dateSeance').valueAsDate = new Date();
+    renderClients(); renderHistory();
+
+    // Enregistrement du Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW enregistré !'))
+                .catch(err => console.log('Erreur SW:', err));
+        });
+    }
+</script>
+</body>
+</html>
